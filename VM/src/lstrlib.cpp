@@ -1618,6 +1618,42 @@ static int str_unpack(lua_State* L)
     return n + 1;
 }
 
+static int str_contains(lua_State* L)
+{
+    size_t haystackLen;
+    const char* haystack = luaL_checklstring(L, 1, &haystackLen);
+    size_t needleLen;
+    const char* needle = luaL_checklstring(L, 2, &needleLen);
+
+    const char* begin = haystack;
+    const char* end = haystack + haystackLen;
+
+    if (needleLen == 0)
+    {
+        lua_pushboolean(L, 1);
+        return 1;
+    }
+
+    // Don't iterate the last needleLen - 1 bytes of the string - they are
+    // impossible to be splits and would let us memcmp past the end of the
+    // buffer.
+    for (const char* iter = begin; iter <= end - needleLen; iter++)
+    {
+        // Use of memcmp here instead of strncmp is so that we allow embedded
+        // nulls to be used in either of the haystack or the needle strings.
+        // Most Lua string APIs allow embedded nulls, and this should be no
+        // exception.
+        if (memcmp(iter, needle, needleLen) == 0)
+        {
+            lua_pushboolean(L, 1);
+            return 1;
+        }
+    }
+
+    lua_pushboolean(L, 0);
+    return 1;
+}
+
 // }======================================================
 
 static const luaL_Reg strlib[] = {
@@ -1638,6 +1674,7 @@ static const luaL_Reg strlib[] = {
     {"pack", str_pack},
     {"packsize", str_packsize},
     {"unpack", str_unpack},
+    {"contains", str_contains},
     {NULL, NULL},
 };
 

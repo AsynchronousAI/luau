@@ -4,6 +4,7 @@
 
 #include "lstate.h"
 
+#include <stdio.h>
 #include <math.h>
 #include <time.h>
 
@@ -385,12 +386,36 @@ static int math_round(lua_State* L)
     return 1;
 }
 
+static int math_abbreviate(lua_State *L){
+    double v = luaL_checknumber(L, 1);
+    const char* suffixes[] = {"", "K", "M", "B", "T", "QD", "QT", "SX", "SP", "O", "N", "D"};
+    int suffix = 0;
+    while (v >= 1000.0 && suffix < 4){
+        v /= 1000.0;
+        suffix++;
+    }
+    char buffer[32];
+    if (v > 1000*sizeof(suffixes)){
+        luaL_error(L, "number too large to abbreviate");
+    }
+    sprintf(buffer, "%.1f%s", v, suffixes[suffix]);
+    lua_pushstring(L, buffer);
+    return 1;
+}
+
+static int math_cbrt(lua_State *L){
+    lua_pushnumber(L, cbrt(luaL_checknumber(L, 1)));
+    return 1;
+}
+
 static const luaL_Reg mathlib[] = {
     {"abs", math_abs},
+    {"abbrv", math_abbreviate},
     {"acos", math_acos},
     {"asin", math_asin},
     {"atan2", math_atan2},
     {"atan", math_atan},
+    {"cbrt", math_cbrt},
     {"ceil", math_ceil},
     {"cosh", math_cosh},
     {"cos", math_cos},

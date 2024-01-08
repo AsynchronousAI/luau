@@ -572,13 +572,36 @@ static int tclone(lua_State* L)
 
     return 1;
 }
+/* TODO: merge
+static int tmerge(lua_State* L) {
+    int nargs = lua_gettop(L);
 
+    int currentLen = 0;
+    for (int i = 1; i <= nargs; i++) {
+        luaL_checktype(L, i, LUA_TTABLE);
+        if (lua_getreadonly(L, i)) {
+            luaL_error(L, "cannot merge a readonly table");
+        }
+        Table* t = hvalue(L->base + (i - 1));
+        int len = t->sizearray;
+
+        for (int j = 1; j <= len; j++) {
+            lua_rawgeti(L, i, j);
+            lua_rawseti(L, 1, currentLen + j);
+        }
+        currentLen += len;
+    }
+
+    return 1;
+}
+*/
 static const luaL_Reg tab_funcs[] = {
     {"concat", tconcat},
     {"foreach", foreach},
     {"foreachi", foreachi},
     {"getn", getn},
     {"maxn", maxn},
+    //{"merge", tmerge},
     {"insert", tinsert},
     {"remove", tremove},
     {"sort", tsort},
