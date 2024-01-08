@@ -572,29 +572,31 @@ static int tclone(lua_State* L)
 
     return 1;
 }
-/* TODO: merge
+
 static int tmerge(lua_State* L) {
+    /* DO NOT USE: I have tried to implement this function, but it is pretty hard. The api is table.merge(table1, table2, ...) and it merges all the tables into the first one.
     int nargs = lua_gettop(L);
+    luaL_checktype(L, 1, LUA_TTABLE);
 
-    int currentLen = 0;
+    lua_newtable(L);
+    int current = 0;
+
     for (int i = 1; i <= nargs; i++) {
-        luaL_checktype(L, i, LUA_TTABLE);
-        if (lua_getreadonly(L, i)) {
-            luaL_error(L, "cannot merge a readonly table");
-        }
-        Table* t = hvalue(L->base + (i - 1));
-        int len = t->sizearray;
+        lua_pushnil(L);  // first key for iteration
+        while (lua_next(L, i) != 0) {
+            // uses 'key' (at index -2) and 'value' (at index -1)
+            lua_pushvalue(L, -1);  // copy value to top
+            lua_rawseti(L, -3, current+1);  // append value to result table
+            lua_pop(L, 1);  // remove value, keep key for next iteration
 
-        for (int j = 1; j <= len; j++) {
-            lua_rawgeti(L, i, j);
-            lua_rawseti(L, 1, currentLen + j);
+            current += 1;
         }
-        currentLen += len;
     }
 
     return 1;
+    */
 }
-*/
+
 static const luaL_Reg tab_funcs[] = {
     {"concat", tconcat},
     {"foreach", foreach},
